@@ -139,8 +139,19 @@ export function generateAllDemoAssets(): number {
   let count = 0;
   for (const item of assets) {
     const fullPath = path.join(dir, item.filename);
-    const svg = buildSvg(item);
-    fs.writeFileSync(fullPath, svg, "utf-8");
+    const baseName = item.filename.replace(/\.svg$/, "");
+    const webpPath = path.join(dir, `${baseName}.webp`);
+
+    if (fs.existsSync(webpPath)) {
+      // Real photograph exists, embed photo in SVG proxy
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1067" width="100%" height="100%">
+  <image href="/demo/${baseName}.webp" width="800" height="1067" preserveAspectRatio="xMidYMid slice"/>
+</svg>`;
+      fs.writeFileSync(fullPath, svg, "utf-8");
+    } else {
+      const svg = buildSvg(item);
+      fs.writeFileSync(fullPath, svg, "utf-8");
+    }
     count++;
   }
 

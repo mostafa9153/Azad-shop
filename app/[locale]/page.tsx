@@ -223,7 +223,7 @@ export default async function HomePage({
             <div className="lg:col-span-5 flex justify-center">
               <div className="relative w-64 h-84 rounded-t-[100px] rounded-b-2xl overflow-hidden border-2 border-[#C5A059]/60 shadow-2xl bg-[#FBF7F0]/10">
                 <Image
-                  src="/demo/set-complete-royal.svg"
+                  src="/demo/set-complete-royal.webp"
                   alt="Royal 3-Piece Modest Set"
                   fill
                   className="object-cover"
