@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Locale, formatPrice } from "@/lib/i18n";
@@ -22,6 +22,14 @@ export function QuickViewDialog({ product, isOpen, onClose, locale }: QuickViewD
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [selectedImage, setSelectedImage] = useState<string>("");
   const [added, setAdded] = useState(false);
+
+  useEffect(() => {
+    if (product) {
+      setSelectedVariant(product.variants?.[0] || null);
+      setSelectedImage(product.images?.[0]?.image_url || "/placeholder-product.svg");
+      setAdded(false);
+    }
+  }, [product]);
 
   const { addItem, openCart } = useCartStore();
   const { toggleItem, isInWishlist } = useWishlistStore();

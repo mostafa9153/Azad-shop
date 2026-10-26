@@ -9,16 +9,19 @@ import { useWishlistStore } from "@/lib/wishlist-store";
 import { Heart, ShoppingBag, Eye, Check } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { QuickViewDialog } from "./quick-view-dialog";
 
 interface ProductCardProps {
   product: Product;
   locale: Locale;
   priority?: boolean;
+  onQuickView?: (product: Product) => void;
 }
 
-export function ProductCard({ product, locale, priority = false }: ProductCardProps) {
+export function ProductCard({ product, locale, priority = false, onQuickView }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [added, setAdded] = useState(false);
+  const [internalQuickView, setInternalQuickView] = useState(false);
 
   const { addItem, openCart } = useCartStore();
   const { toggleItem, isInWishlist } = useWishlistStore();
@@ -86,6 +89,16 @@ export function ProductCard({ product, locale, priority = false }: ProductCardPr
           ? `পছন্দের তালিকায় সংরক্ষিত হয়েছে`
           : `Saved to your wishlist`
       );
+    }
+  };
+
+  const handleOpenQuickView = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onQuickView) {
+      onQuickView(product);
+    } else {
+      setInternalQuickView(true);
     }
   };
 
@@ -183,13 +196,15 @@ export function ProductCard({ product, locale, priority = false }: ProductCardPr
               </>
             )}
           </button>
-          <Link
-            href={`/${locale}/product/${product.slug}`}
+          <button
+            type="button"
+            onClick={handleOpenQuickView}
             className="p-2 rounded-lg bg-white/90 text-[#1C1B18] hover:bg-white hover:text-[#14372E] shadow-md transition-colors"
-            title={locale === "bn" ? "বিস্তারিত দেখুন" : "View Details"}
+            title={locale === "bn" ? "দ্রুত দেখুন (কুইক ভিউ)" : "Quick View"}
+            aria-label={locale === "bn" ? "দ্রুত দেখুন" : "Quick View"}
           >
             <Eye className="w-4 h-4" />
-          </Link>
+          </button>
         </div>
       </div>
 
@@ -214,7 +229,7 @@ export function ProductCard({ product, locale, priority = false }: ProductCardPr
           </h3>
         </div>
 
-        {/* Pricing & Mobile Quick Add */}
+        {/* Pricing & Mobile Quick Actions */}
         <div className="mt-3 pt-2.5 border-t border-[#E9DDC9]/60 flex items-center justify-between">
           <div>
             <div className="flex items-baseline gap-2">
@@ -232,17 +247,39 @@ export function ProductCard({ product, locale, priority = false }: ProductCardPr
             </p>
           </div>
 
-          {/* Mobile quick add button (< 640px) */}
-          <button
-            onClick={handleQuickAdd}
-            disabled={isOutOfStock}
-            className="sm:hidden p-2 rounded-full bg-[#14372E] text-[#FBF7F0] shadow-sm active:scale-95 transition-transform"
-            aria-label="Add to cart"
-          >
-            {added ? <Check className="w-4 h-4 text-green-300" /> : <ShoppingBag className="w-4 h-4" />}
-          </button>
+          {/* Mobile action buttons (< 640px) */}
+          <div className="sm:hidden flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={handleOpenQuickView}
+              className="p-2 rounded-full bg-[#E9DDC9]/60 text-[#14372E] shadow-2xs active:scale-95 transition-transform"
+              aria-label="Quick view"
+              title={locale === "bn" ? "দ্রুত দেখুন" : "Quick View"}
+            >
+              <Eye className="w-3.5 h-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={handleQuickAdd}
+              disabled={isOutOfStock}
+              className="p-2 rounded-full bg-[#14372E] text-[#FBF7F0] shadow-sm active:scale-95 transition-transform"
+              aria-label="Add to cart"
+            >
+              {added ? <Check className="w-4 h-4 text-green-300" /> : <ShoppingBag className="w-4 h-4" />}
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Internal Quick View Dialog when parent does not supply custom handler */}
+      {!onQuickView && internalQuickView && (
+        <QuickViewDialog
+          product={product}
+          isOpen={internalQuickView}
+          onClose={() => setInternalQuickView(false)}
+          locale={locale}
+        />
+      )}
     </div>
   );
 }

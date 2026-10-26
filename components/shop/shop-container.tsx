@@ -472,7 +472,12 @@ export function ShopContainer({
                 }`}
               >
                 {paginatedProducts.map((p) => (
-                  <ProductCard key={p.id} product={p} locale={locale} />
+                  <ProductCard
+                    key={p.id}
+                    product={p}
+                    locale={locale}
+                    onQuickView={setQuickViewProduct}
+                  />
                 ))}
               </div>
 

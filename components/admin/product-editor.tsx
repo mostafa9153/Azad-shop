@@ -597,7 +597,7 @@ export function ProductEditor({
               key={idx}
               className="relative aspect-3/4 rounded-xl border border-[#E9DDC9] bg-[#FBF7F0] overflow-hidden group shadow-2xs"
             >
-              <Image src={img} alt={`Preview ${idx + 1}`} fill className="object-cover" />
+              <Image src={img} alt={`Preview ${idx + 1}`} fill className="object-cover" unoptimized />
               {idx === 0 && (
                 <span className="absolute top-1 left-1 bg-[#14372E] text-white text-[9px] px-1.5 py-0.5 rounded font-bold">
                   {locale === "bn" ? "কভার" : "Cover"}

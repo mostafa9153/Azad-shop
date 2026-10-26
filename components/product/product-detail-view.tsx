@@ -145,6 +145,7 @@ export function ProductDetailView({
           <ProductGallery
             images={product.images || []}
             title={locale === "bn" ? product.title_bn : product.title_en}
+            locale={locale}
           />
         </div>
 

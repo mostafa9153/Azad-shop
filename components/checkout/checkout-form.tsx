@@ -401,7 +401,7 @@ export function CheckoutForm({ locale }: CheckoutFormProps) {
               <div key={item.id} className="pt-3 flex items-center justify-between text-xs sm:text-sm">
                 <div className="flex items-center gap-3">
                   <div className="relative w-12 h-16 rounded-lg overflow-hidden bg-[#FBF7F0] shrink-0 border border-[#E9DDC9]">
-                    <Image src={item.imageUrl} alt="" fill className="object-cover" unoptimized />
+                    <Image src={item.imageUrl || "/placeholder-product.svg"} alt="" fill className="object-cover" unoptimized />
                   </div>
                   <div>
                     <h4 className="font-bold text-[#14372E]">

@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import { Locale, formatPrice } from "@/lib/i18n";
 import { db } from "@/lib/db";
 import { brandConfig } from "@/config/brand.config";
-import { Printer, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { PrintButton } from "@/components/invoice/print-button";
 import Link from "next/link";
 
 export default async function InvoicePage({
@@ -36,15 +37,7 @@ export default async function InvoicePage({
           <span>{locale === "bn" ? "অর্ডার ট্র্যাকিং-এ ফিরুন" : "Back to Tracking"}</span>
         </Link>
 
-        <button
-          onClick={() => {
-            if (typeof window !== "undefined") window.print();
-          }}
-          className="px-5 py-2.5 rounded-xl bg-[#14372E] text-white text-xs font-bold shadow-md hover:bg-[#14372E]/90 flex items-center gap-2 cursor-pointer"
-        >
-          <Printer className="w-4 h-4" />
-          <span>{locale === "bn" ? "প্রিন্ট চালান / ডাউনলোড PDF" : "Print Invoice / Save PDF"}</span>
-        </button>
+        <PrintButton locale={locale} />
       </div>
 
       {/* Printable Invoice Card */}
@@ -97,7 +90,12 @@ export default async function InvoicePage({
               {order.shipping_address.city}, {order.shipping_address.state} - {order.shipping_address.pincode}
               <br />
               Phone: {order.customer_phone}
-              {order.customer_email && `<br />Email: ${order.customer_email}`}
+              {order.customer_email && (
+                <>
+                  <br />
+                  Email: {order.customer_email}
+                </>
+              )}
             </p>
           </div>
 
