@@ -28,7 +28,7 @@ export function StickyMobileBuyBar({
   };
 
   return (
-    <div className="sm:hidden fixed bottom-16 left-0 right-0 z-30 bg-[#FBF7F0]/95 backdrop-blur-md border-t border-[#E9DDC9] p-3 shadow-2xl flex items-center justify-between gap-3 animate-in slide-in-from-bottom duration-200">
+    <div className="sm:hidden fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] left-0 right-0 z-30 bg-[#FBF7F0]/95 backdrop-blur-md border-t border-[#E9DDC9] p-3 shadow-2xl flex items-center justify-between gap-3 animate-in slide-in-from-bottom duration-200">
       <div>
         <span className="text-base font-bold text-[#14372E]">
           {formatPrice(selectedVariant?.price_paise || product.base_price_paise, locale)}

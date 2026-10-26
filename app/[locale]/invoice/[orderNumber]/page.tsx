@@ -202,11 +202,11 @@ export default async function InvoicePage({
             )}
 
             <div className="flex justify-between text-[11px] text-[#777777] pt-1 border-t border-[#EEEEEE]">
-              <span>Included CGST (2.5%):</span>
+              <span>Included CGST:</span>
               <span>{formatPrice(Math.round(order.gst_total_paise / 2), "en")}</span>
             </div>
             <div className="flex justify-between text-[11px] text-[#777777]">
-              <span>Included SGST (2.5%):</span>
+              <span>Included SGST:</span>
               <span>{formatPrice(Math.round(order.gst_total_paise / 2), "en")}</span>
             </div>
 

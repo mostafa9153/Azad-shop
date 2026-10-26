@@ -9,7 +9,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Order ID is required" }, { status: 400 });
     }
 
-    const updated = await db.updateOrderStatus(orderId, "cancelled");
+    const updated = await db.cancelOrder(orderId, reason || "Customer requested cancellation", "customer");
 
     return NextResponse.json({ success: true, order: updated });
   } catch (err: any) {

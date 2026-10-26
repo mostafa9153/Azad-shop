@@ -33,7 +33,7 @@ export function CookieBanner({ locale }: CookieBannerProps) {
   return (
     <aside
       aria-label="Privacy & Cookie Preferences"
-      className="fixed bottom-18 md:bottom-6 left-4 right-4 md:left-6 md:right-auto md:max-w-md z-40 bg-[#1C1B18]/95 text-[#FBF7F0] p-4 rounded-xl shadow-2xl border border-[#A8834A]/40 backdrop-blur-md animate-in slide-in-from-bottom duration-300"
+      className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] md:bottom-6 left-4 right-4 md:left-6 md:right-auto md:max-w-md z-40 bg-[#1C1B18]/95 text-[#FBF7F0] p-4 rounded-xl shadow-2xl border border-[#A8834A]/40 backdrop-blur-md animate-in slide-in-from-bottom duration-300"
     >
       <div className="flex items-start gap-3">
         <ShieldCheck className="w-5 h-5 text-[#C5A059] shrink-0 mt-0.5" />

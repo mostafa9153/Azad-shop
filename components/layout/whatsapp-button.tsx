@@ -19,7 +19,7 @@ export function WhatsAppButton({ locale }: WhatsAppButtonProps) {
   return (
     <aside
       aria-label="Direct WhatsApp Assistance"
-      className="fixed bottom-20 md:bottom-8 right-4 md:right-8 z-40"
+      className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] md:bottom-8 right-4 md:right-8 z-40"
     >
       <a
         href={whatsappUrl}

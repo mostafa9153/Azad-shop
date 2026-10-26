@@ -294,3 +294,80 @@ BEGIN
   RETURN QUERY SELECT true, v_curr_qty, v_next_qty, v_sku;
 END;
 $$;
+
+-- Atomic RPC: create_order
+CREATE OR REPLACE FUNCTION create_order(
+  p_order_number VARCHAR(50),
+  p_customer_name VARCHAR(150),
+  p_customer_email VARCHAR(150),
+  p_customer_phone VARCHAR(50),
+  p_shipping_address JSONB,
+  p_billing_address JSONB,
+  p_items_total_paise BIGINT,
+  p_discount_total_paise BIGINT,
+  p_shipping_fee_paise BIGINT,
+  p_cod_fee_paise BIGINT,
+  p_custom_fee_paise BIGINT,
+  p_total_paise BIGINT,
+  p_gst_total_paise BIGINT,
+  p_payment_method VARCHAR(50),
+  p_payment_status VARCHAR(50),
+  p_order_status VARCHAR(50),
+  p_coupon_code VARCHAR(50) DEFAULT NULL,
+  p_notes TEXT DEFAULT NULL
+)
+RETURNS UUID
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_order_id UUID;
+BEGIN
+  INSERT INTO orders (
+    order_number,
+    customer_name,
+    customer_email,
+    customer_phone,
+    shipping_address,
+    billing_address,
+    items_total_paise,
+    discount_total_paise,
+    shipping_fee_paise,
+    cod_fee_paise,
+    custom_size_fee_paise,
+    total_paise,
+    gst_total_paise,
+    payment_method,
+    payment_status,
+    order_status,
+    coupon_code,
+    notes,
+    created_at,
+    updated_at
+  ) VALUES (
+    p_order_number,
+    p_customer_name,
+    p_customer_email,
+    p_customer_phone,
+    p_shipping_address,
+    p_billing_address,
+    p_items_total_paise,
+    p_discount_total_paise,
+    p_shipping_fee_paise,
+    p_cod_fee_paise,
+    p_custom_fee_paise,
+    p_total_paise,
+    p_gst_total_paise,
+    p_payment_method,
+    p_payment_status,
+    p_order_status,
+    p_coupon_code,
+    p_notes,
+    NOW(),
+    NOW()
+  )
+  RETURNING id INTO v_order_id;
+
+  RETURN v_order_id;
+END;
+$$;
+

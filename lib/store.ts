@@ -44,6 +44,15 @@ const defaultSettings: SiteSettings = {
 };
 
 let memoryStore: StoreData | null = null;
+let storeLock: Promise<any> = Promise.resolve();
+
+export function withStoreLock<T>(fn: () => Promise<T> | T): Promise<T> {
+  const next = storeLock.then(async () => {
+    return await fn();
+  });
+  storeLock = next.catch(() => {});
+  return next;
+}
 
 function ensureDataDir() {
   if (!fs.existsSync(DATA_DIR)) {
@@ -154,14 +163,17 @@ export async function getProducts(options?: {
 
   if (options?.search) {
     const q = options.search.toLowerCase();
-    list = list.filter(
-      (p) =>
+    list = list.filter((p) => {
+      const cat = store.categories.find((c) => c.id === p.category_id);
+      return (
         p.title_en.toLowerCase().includes(q) ||
         p.title_bn.toLowerCase().includes(q) ||
         p.sku.toLowerCase().includes(q) ||
         p.fabric_en.toLowerCase().includes(q) ||
-        p.fabric_bn.toLowerCase().includes(q)
-    );
+        p.fabric_bn.toLowerCase().includes(q) ||
+        (cat && (cat.name_en.toLowerCase().includes(q) || cat.name_bn.toLowerCase().includes(q) || cat.slug.toLowerCase().includes(q)))
+      );
+    });
   }
 
   // Populate variants & images
@@ -280,6 +292,41 @@ export async function upsertProduct(product: Partial<Product>, variants: Partial
         weight_grams: v.weight_grams ?? 500,
       };
       store.product_variants.push(newVar);
+
+      // Maintain double-entry stock ledger integrity
+      const existingLedger = store.stock_ledger.filter((l) => l.variant_id === vId);
+      const computedExisting = existingLedger.reduce((acc, curr) => acc + curr.quantity_change, 0);
+      const stockQty = newVar.stock_quantity;
+      if (existingLedger.length === 0) {
+        store.stock_ledger.unshift({
+          id: `led_init_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+          variant_id: vId,
+          sku: newVar.sku,
+          change_type: "initial",
+          quantity_change: stockQty,
+          previous_quantity: 0,
+          new_quantity: stockQty,
+          reference_id: "PRODUCT-UPSERT",
+          note: `Admin initialized stock for ${product.title_en || "Product"} (${newVar.size}, ${newVar.color_en})`,
+          created_at: now,
+          created_by: "admin",
+        });
+      } else if (computedExisting !== stockQty) {
+        const diff = stockQty - computedExisting;
+        store.stock_ledger.unshift({
+          id: `led_adj_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+          variant_id: vId,
+          sku: newVar.sku,
+          change_type: "adjustment",
+          quantity_change: diff,
+          previous_quantity: computedExisting,
+          new_quantity: stockQty,
+          reference_id: "PRODUCT-UPSERT",
+          note: `Admin adjusted stock delta for ${product.title_en || "Product"} (${newVar.size}, ${newVar.color_en})`,
+          created_at: now,
+          created_by: "admin",
+        });
+      }
     }
   }
 
@@ -298,46 +345,48 @@ export async function adjustStock(
   referenceId?: string,
   createdBy: string = "system"
 ): Promise<{ success: boolean; previousQuantity: number; newQuantity: number; sku: string }> {
-  const store = loadStore();
-  const vIndex = store.product_variants.findIndex((v) => v.id === variantId);
-  if (vIndex === -1) {
-    throw new Error(`Variant not found: ${variantId}`);
-  }
+  return withStoreLock(async () => {
+    const store = loadStore();
+    const vIndex = store.product_variants.findIndex((v) => v.id === variantId);
+    if (vIndex === -1) {
+      throw new Error(`Variant not found: ${variantId}`);
+    }
 
-  const variant = store.product_variants[vIndex];
-  const prevQty = variant.stock_quantity;
-  const newQty = prevQty + quantityChange;
+    const variant = store.product_variants[vIndex];
+    const prevQty = variant.stock_quantity;
+    const newQty = prevQty + quantityChange;
 
-  if (newQty < 0) {
-    throw new Error(`Insufficient stock for SKU ${variant.sku}: current ${prevQty}, requested change ${quantityChange}`);
-  }
+    if (newQty < 0) {
+      throw new Error(`Insufficient stock for SKU ${variant.sku}: current ${prevQty}, requested change ${quantityChange}`);
+    }
 
-  variant.stock_quantity = newQty;
-  variant.updated_at = new Date().toISOString();
+    variant.stock_quantity = newQty;
+    variant.updated_at = new Date().toISOString();
 
-  const ledgerEntry: StockLedgerEntry = {
-    id: `led_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-    variant_id: variantId,
-    sku: variant.sku,
-    change_type: changeType,
-    quantity_change: quantityChange,
-    previous_quantity: prevQty,
-    new_quantity: newQty,
-    reference_id: referenceId,
-    note,
-    created_at: new Date().toISOString(),
-    created_by: createdBy,
-  };
+    const ledgerEntry: StockLedgerEntry = {
+      id: `led_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      variant_id: variantId,
+      sku: variant.sku,
+      change_type: changeType,
+      quantity_change: quantityChange,
+      previous_quantity: prevQty,
+      new_quantity: newQty,
+      reference_id: referenceId,
+      note,
+      created_at: new Date().toISOString(),
+      created_by: createdBy,
+    };
 
-  store.stock_ledger.unshift(ledgerEntry);
-  saveStore(store);
+    store.stock_ledger.unshift(ledgerEntry);
+    saveStore(store);
 
-  return {
-    success: true,
-    previousQuantity: prevQty,
-    newQuantity: newQty,
-    sku: variant.sku,
-  };
+    return {
+      success: true,
+      previousQuantity: prevQty,
+      newQuantity: newQty,
+      sku: variant.sku,
+    };
+  });
 }
 
 export async function getStockLedger(limit: number = 100): Promise<StockLedgerEntry[]> {
@@ -373,16 +422,13 @@ export async function verifyStockIntegrity(): Promise<{
   for (const v of store.product_variants) {
     // sum ledger entries for this variant
     const entries = store.stock_ledger.filter((l) => l.variant_id === v.id);
-    if (entries.length > 0) {
-      // ledger has records, compute sum
-      const computed = entries.reduce((acc, curr) => acc + curr.quantity_change, 0);
-      if (computed !== v.stock_quantity) {
-        discrepancies.push({
-          sku: v.sku,
-          variantStock: v.stock_quantity,
-          ledgerComputedStock: computed,
-        });
-      }
+    const computed = entries.reduce((acc, curr) => acc + curr.quantity_change, 0);
+    if (computed !== v.stock_quantity) {
+      discrepancies.push({
+        sku: v.sku,
+        variantStock: v.stock_quantity,
+        ledgerComputedStock: computed,
+      });
     }
   }
 
@@ -468,137 +514,172 @@ export async function createOrder(data: {
   coupon_code?: string;
   notes?: string;
 }): Promise<Order> {
-  const store = loadStore();
-  const now = new Date().toISOString();
+  return withStoreLock(async () => {
+    const store = loadStore();
+    const now = new Date().toISOString();
 
-  // 1. Calculate items total & custom size fees
-  let itemsTotal = 0;
-  let customFeeTotal = 0;
-  for (const item of data.items) {
-    itemsTotal += item.price_paise * item.quantity;
-    if (item.is_custom_size) {
-      customFeeTotal += 15000 * item.quantity; // ₹150 tailoring fee per custom item
-    }
-  }
-
-  // 2. Validate coupon
-  let discountTotal = 0;
-  if (data.coupon_code) {
-    const val = await validateCoupon(data.coupon_code, itemsTotal);
-    if (val.valid) {
-      discountTotal = val.discountPaise;
-      const cIndex = store.coupons.findIndex((c) => c.code.toUpperCase() === data.coupon_code!.toUpperCase());
-      if (cIndex !== -1) {
-        store.coupons[cIndex].usage_count += 1;
+    // 1. Calculate items total & custom size fees
+    let itemsTotal = 0;
+    let customFeeTotal = 0;
+    for (const item of data.items) {
+      itemsTotal += item.price_paise * item.quantity;
+      if (item.is_custom_size) {
+        customFeeTotal += 15000 * item.quantity; // ₹150 tailoring fee per custom item
       }
     }
-  }
 
-  // 3. GST calculation (5% up to ₹2500, 18% above - inclusive)
-  const gstTotal = Math.round((itemsTotal * 0.05) / 1.05);
-
-  const grandTotal = Math.max(
-    0,
-    itemsTotal - discountTotal + data.shipping_fee_paise + (data.cod_fee_paise || 0) + customFeeTotal
-  );
-
-  // 4. Generate Order Number & ID
-  const orderNumber = `AH-${Date.now().toString().slice(-6)}-${Math.floor(10 + Math.random() * 90)}`;
-  const orderId = `ord_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-
-  // 5. Atomically check and deduct/allocate stock
-  for (const item of data.items) {
-    if (item.variant_id) {
-      await adjustStock(
-        item.variant_id,
-        -item.quantity,
-        item.is_custom_size ? "tailoring_allocated" : "sale",
-        `Order ${item.is_custom_size ? "custom tailoring" : "sale"}: ${data.customer_name} (${data.customer_phone})`,
-        orderNumber,
-        "checkout"
-      );
+    // 2. Validate coupon
+    let discountTotal = 0;
+    if (data.coupon_code) {
+      const val = await validateCoupon(data.coupon_code, itemsTotal);
+      if (val.valid) {
+        discountTotal = val.discountPaise;
+        const cIndex = store.coupons.findIndex((c) => c.code.toUpperCase() === data.coupon_code!.toUpperCase());
+        if (cIndex !== -1) {
+          store.coupons[cIndex].usage_count += 1;
+        }
+      }
     }
-  }
 
-  // Determine order status
-  const hasCustom = data.items.some((i) => i.is_custom_size);
-  const initialOrderStatus = hasCustom ? "tailoring" : "processing";
+    // 3. GST calculation per item (5% up to ₹2,500, 18% above - inclusive)
+    let gstTotal = 0;
+    for (const item of data.items) {
+      const itemSubtotal = item.price_paise * item.quantity;
+      const gstRate = item.price_paise > 250000 ? 0.18 : 0.05;
+      const itemGst = Math.round((itemSubtotal * gstRate) / (1 + gstRate));
+      gstTotal += itemGst;
+    }
 
-  const newOrder: Order = {
-    id: orderId,
-    order_number: orderNumber,
-    customer_name: data.customer_name,
-    customer_email: data.customer_email,
-    customer_phone: data.customer_phone,
-    shipping_address: data.shipping_address,
-    billing_address: data.billing_address || data.shipping_address,
-    items_total_paise: itemsTotal,
-    discount_total_paise: discountTotal,
-    shipping_fee_paise: data.shipping_fee_paise,
-    cod_fee_paise: data.cod_fee_paise || 0,
-    custom_size_fee_paise: customFeeTotal,
-    total_paise: grandTotal,
-    gst_total_paise: gstTotal,
-    payment_method: data.payment_method,
-    payment_status: data.payment_status,
-    order_status: initialOrderStatus,
-    shipping_method: "Express West Bengal Courier",
-    coupon_code: data.coupon_code,
-    notes: data.notes,
-    created_at: now,
-    updated_at: now,
-    items: [],
-  };
+    const grandTotal = Math.max(
+      0,
+      itemsTotal - discountTotal + data.shipping_fee_paise + (data.cod_fee_paise || 0) + customFeeTotal
+    );
 
-  store.orders.unshift(newOrder);
+    // 4. Generate Order Number & ID
+    const orderNumber = `AH-${Date.now().toString().slice(-6)}-${Math.floor(10 + Math.random() * 90)}`;
+    const orderId = `ord_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
-  // 6. Insert Order Items & Tailoring Queue if needed
-  for (const item of data.items) {
-    const itemId = `item_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-    const orderItem: OrderItem = {
-      id: itemId,
-      order_id: orderId,
-      product_id: item.product_id,
-      variant_id: item.variant_id,
-      title_en: item.title_en,
-      title_bn: item.title_bn,
-      sku: item.sku,
-      size: item.size,
-      color_en: item.color_en,
-      color_bn: item.color_bn,
-      quantity: item.quantity,
-      price_paise: item.price_paise,
-      total_paise: item.price_paise * item.quantity,
-      custom_measurements: item.custom_measurements,
-      is_custom_size: item.is_custom_size,
-      image_url: item.image_url,
+    // 5. ATOMIC PRE-VALIDATION: Ensure ALL items have sufficient stock before making any deductions
+    for (const item of data.items) {
+      if (item.variant_id) {
+        const variant = store.product_variants.find((v) => v.id === item.variant_id);
+        if (!variant) {
+          throw new Error(`Variant not found: ${item.variant_id}`);
+        }
+        if (variant.stock_quantity < item.quantity) {
+          throw new Error(
+            `Insufficient stock for SKU ${variant.sku}: current ${variant.stock_quantity}, requested ${item.quantity}`
+          );
+        }
+      }
+    }
+
+    // 6. Deduct stock and record in double-entry stock ledger
+    for (const item of data.items) {
+      if (item.variant_id) {
+        const variant = store.product_variants.find((v) => v.id === item.variant_id)!;
+        const prevQty = variant.stock_quantity;
+        const newQty = prevQty - item.quantity;
+        variant.stock_quantity = newQty;
+        variant.updated_at = now;
+
+        const ledgerEntry: StockLedgerEntry = {
+          id: `led_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+          variant_id: item.variant_id,
+          sku: variant.sku,
+          change_type: item.is_custom_size ? "tailoring_allocated" : "sale",
+          quantity_change: -item.quantity,
+          previous_quantity: prevQty,
+          new_quantity: newQty,
+          reference_id: orderNumber,
+          note: `Order ${item.is_custom_size ? "custom tailoring" : "sale"}: ${data.customer_name} (${data.customer_phone})`,
+          created_at: now,
+          created_by: "checkout",
+        };
+        store.stock_ledger.unshift(ledgerEntry);
+      }
+    }
+
+    // Determine order status
+    const hasCustom = data.items.some((i) => i.is_custom_size);
+    const initialOrderStatus = hasCustom ? "tailoring" : "processing";
+
+    const newOrder: Order = {
+      id: orderId,
+      order_number: orderNumber,
+      customer_name: data.customer_name,
+      customer_email: data.customer_email,
+      customer_phone: data.customer_phone,
+      shipping_address: data.shipping_address,
+      billing_address: data.billing_address || data.shipping_address,
+      items_total_paise: itemsTotal,
+      discount_total_paise: discountTotal,
+      shipping_fee_paise: data.shipping_fee_paise,
+      cod_fee_paise: data.cod_fee_paise || 0,
+      custom_size_fee_paise: customFeeTotal,
+      total_paise: grandTotal,
+      gst_total_paise: gstTotal,
+      payment_method: data.payment_method,
+      payment_status: data.payment_status,
+      order_status: initialOrderStatus,
+      shipping_method: "Express West Bengal Courier",
+      coupon_code: data.coupon_code,
+      notes: data.notes,
+      created_at: now,
+      updated_at: now,
+      items: [],
     };
-    store.order_items.push(orderItem);
-    newOrder.items!.push(orderItem);
 
-    if (item.is_custom_size && item.custom_measurements) {
-      const tailoringJob: TailoringJob = {
-        id: `tailor_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+    store.orders.unshift(newOrder);
+
+    // 7. Insert Order Items & Tailoring Queue if needed
+    for (const item of data.items) {
+      const itemId = `item_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+      const orderItem: OrderItem = {
+        id: itemId,
         order_id: orderId,
-        order_number: orderNumber,
-        order_item_id: itemId,
-        customer_name: data.customer_name,
-        customer_phone: data.customer_phone,
-        product_title_en: item.title_en,
-        product_title_bn: item.title_bn,
-        measurements: item.custom_measurements,
-        status: "queued",
-        notes: `Custom size request for ${item.title_bn}`,
-        due_date: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString(),
-        created_at: now,
-        updated_at: now,
+        product_id: item.product_id,
+        variant_id: item.variant_id,
+        title_en: item.title_en,
+        title_bn: item.title_bn,
+        sku: item.sku,
+        size: item.size,
+        color_en: item.color_en,
+        color_bn: item.color_bn,
+        quantity: item.quantity,
+        price_paise: item.price_paise,
+        total_paise: item.price_paise * item.quantity,
+        custom_measurements: item.custom_measurements,
+        is_custom_size: item.is_custom_size,
+        image_url: item.image_url,
       };
-      store.tailoring_queue.unshift(tailoringJob);
-    }
-  }
+      store.order_items.push(orderItem);
+      newOrder.items!.push(orderItem);
 
-  saveStore(store);
-  return newOrder;
+      if (item.is_custom_size && item.custom_measurements) {
+        const tailoringJob: TailoringJob = {
+          id: `tailor_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+          order_id: orderId,
+          order_number: orderNumber,
+          order_item_id: itemId,
+          customer_name: data.customer_name,
+          customer_phone: data.customer_phone,
+          product_title_en: item.title_en,
+          product_title_bn: item.title_bn,
+          measurements: item.custom_measurements,
+          status: "queued",
+          notes: `Custom size request for ${item.title_bn}`,
+          due_date: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString(),
+          created_at: now,
+          updated_at: now,
+        };
+        store.tailoring_queue.unshift(tailoringJob);
+      }
+    }
+
+    saveStore(store);
+    return newOrder;
+  });
 }
 
 export async function getOrders(filter?: { status?: string; search?: string }): Promise<Order[]> {
@@ -631,10 +712,10 @@ export async function getOrderByNumber(orderNumber: string, phone?: string): Pro
   const order = store.orders.find((o) => o.order_number.toUpperCase() === cleanNum);
   if (!order) return null;
 
-  if (phone) {
+  if (phone !== undefined) {
     const cleanPhone = phone.replace(/[^0-9]/g, "");
     const orderPhone = order.customer_phone.replace(/[^0-9]/g, "");
-    if (!orderPhone.endsWith(cleanPhone) && !cleanPhone.endsWith(orderPhone)) {
+    if (cleanPhone.length < 10 || (!orderPhone.endsWith(cleanPhone) && !cleanPhone.endsWith(orderPhone))) {
       return null;
     }
   }
@@ -646,33 +727,144 @@ export async function getOrderByNumber(orderNumber: string, phone?: string): Pro
 }
 
 export async function updateOrderStatus(orderId: string, status: any): Promise<Order | null> {
-  const store = loadStore();
-  const oIdx = store.orders.findIndex((o) => o.id === orderId);
-  if (oIdx === -1) return null;
+  if (status === "cancelled") {
+    return cancelOrder(orderId, "Status updated to cancelled");
+  }
 
-  store.orders[oIdx].order_status = status;
-  store.orders[oIdx].updated_at = new Date().toISOString();
-  saveStore(store);
+  return withStoreLock(async () => {
+    const store = loadStore();
+    const oIdx = store.orders.findIndex((o) => o.id === orderId);
+    if (oIdx === -1) return null;
 
-  return {
-    ...store.orders[oIdx],
-    items: store.order_items.filter((i) => i.order_id === orderId),
-  };
+    store.orders[oIdx].order_status = status;
+    store.orders[oIdx].updated_at = new Date().toISOString();
+    saveStore(store);
+
+    return {
+      ...store.orders[oIdx],
+      items: store.order_items.filter((i) => i.order_id === orderId),
+    };
+  });
 }
 
 export async function updatePaymentStatus(orderId: string, status: any): Promise<Order | null> {
-  const store = loadStore();
-  const oIdx = store.orders.findIndex((o) => o.id === orderId);
-  if (oIdx === -1) return null;
+  return withStoreLock(async () => {
+    const store = loadStore();
+    const oIdx = store.orders.findIndex((o) => o.id === orderId);
+    if (oIdx === -1) return null;
 
-  store.orders[oIdx].payment_status = status;
-  store.orders[oIdx].updated_at = new Date().toISOString();
-  saveStore(store);
+    store.orders[oIdx].payment_status = status;
+    store.orders[oIdx].updated_at = new Date().toISOString();
+    saveStore(store);
 
-  return {
-    ...store.orders[oIdx],
-    items: store.order_items.filter((i) => i.order_id === orderId),
-  };
+    return {
+      ...store.orders[oIdx],
+      items: store.order_items.filter((i) => i.order_id === orderId),
+    };
+  });
+}
+
+export async function updateOrder(orderId: string, updates: Partial<Order>): Promise<Order | null> {
+  if (updates.order_status === "cancelled") {
+    return cancelOrder(orderId, updates.notes || "Order cancelled");
+  }
+
+  return withStoreLock(async () => {
+    const store = loadStore();
+    const oIdx = store.orders.findIndex((o) => o.id === orderId);
+    if (oIdx === -1) return null;
+
+    store.orders[oIdx] = {
+      ...store.orders[oIdx],
+      ...updates,
+      updated_at: new Date().toISOString(),
+    };
+    saveStore(store);
+
+    return {
+      ...store.orders[oIdx],
+      items: store.order_items.filter((i) => i.order_id === orderId),
+    };
+  });
+}
+
+export async function cancelOrder(
+  orderId: string,
+  reason?: string,
+  cancelledBy: string = "system"
+): Promise<Order> {
+  return withStoreLock(async () => {
+    const store = loadStore();
+    const oIdx = store.orders.findIndex((o) => o.id === orderId);
+    if (oIdx === -1) {
+      throw new Error(`Order not found: ${orderId}`);
+    }
+
+    const order = store.orders[oIdx];
+    if (order.order_status === "cancelled") {
+      return {
+        ...order,
+        items: store.order_items.filter((i) => i.order_id === order.id),
+      };
+    }
+
+    if (order.order_status === "delivered" || order.order_status === "shipped") {
+      throw new Error(`Cannot cancel order in '${order.order_status}' status. Please request a return.`);
+    }
+
+    const now = new Date().toISOString();
+    const orderItems = store.order_items.filter((i) => i.order_id === order.id);
+
+    // Return stock to inventory and record in stock_ledger
+    for (const item of orderItems) {
+      if (item.variant_id) {
+        const vIndex = store.product_variants.findIndex((v) => v.id === item.variant_id);
+        if (vIndex !== -1) {
+          const variant = store.product_variants[vIndex];
+          const prevQty = variant.stock_quantity;
+          const newQty = prevQty + item.quantity;
+          variant.stock_quantity = newQty;
+          variant.updated_at = now;
+
+          const ledgerEntry: StockLedgerEntry = {
+            id: `led_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+            variant_id: item.variant_id,
+            sku: variant.sku,
+            change_type: "return",
+            quantity_change: item.quantity,
+            previous_quantity: prevQty,
+            new_quantity: newQty,
+            reference_id: order.order_number,
+            note: `Order cancellation: ${order.order_number} (${reason || "Customer cancelled"})`,
+            created_at: now,
+            created_by: cancelledBy,
+          };
+          store.stock_ledger.unshift(ledgerEntry);
+        }
+      }
+    }
+
+    // Cancel queued tailoring jobs
+    for (const job of store.tailoring_queue) {
+      if (job.order_id === order.id && job.status !== "completed") {
+        job.notes = (job.notes || "") + ` [Order cancelled: ${reason || "Cancelled"}]`;
+      }
+    }
+
+    order.order_status = "cancelled";
+    if (order.payment_status === "paid") {
+      order.payment_status = "refunded";
+    }
+    order.notes = (order.notes || "") + (reason ? `\nCancellation reason: ${reason}` : "");
+    order.updated_at = now;
+
+    saveStore(store);
+
+    return {
+      ...order,
+      items: orderItems,
+    };
+  });
 }
 
 /* -------------------------------------------------------------

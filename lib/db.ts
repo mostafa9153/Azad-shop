@@ -42,6 +42,8 @@ export const db = {
   getOrderByNumber: localStore.getOrderByNumber,
   updateOrderStatus: localStore.updateOrderStatus,
   updatePaymentStatus: localStore.updatePaymentStatus,
+  updateOrder: localStore.updateOrder,
+  cancelOrder: localStore.cancelOrder,
 
   // Tailoring Queue
   getTailoringQueue: localStore.getTailoringQueue,
