@@ -1,0 +1,21 @@
+{
+  "categories": [],
+  "collections": [],
+  "products": [],
+  "product_variants": [],
+  "product_images": [],
+  "coupons": [],
+  "orders": [],
+  "order_items": [],
+  "stock_ledger": [],
+  "tailoring_queue": [],
+  "reviews": [],
+  "site_settings": {
+    "announcement_bar_en": "🌟 Special Ramadan & Eid Collection Launch — Free delivery on orders over ₹1,499 across Bengal!",
+    "announcement_bar_bn": "🌟 বিশেষ রমজান ও ঈদ কালেকশন — পশ্চিমবঙ্গ জুড়ে ₹১,৪৯৯-এর অর্ডারে ফ্রি ডেলিভারি!",
+    "announcement_active": true,
+    "whatsapp_enabled": true,
+    "demo_mode_banner": false,
+    "free_shipping_threshold_paise": 149900
+  }
+}
