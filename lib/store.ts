@@ -345,6 +345,22 @@ export async function getStockLedger(limit: number = 100): Promise<StockLedgerEn
   return store.stock_ledger.slice(0, limit);
 }
 
+export async function getAllVariants(): Promise<
+  Array<ProductVariant & { product_title_en: string; product_title_bn: string; product_slug: string }>
+> {
+  const store = loadStore();
+  const prodMap = new Map(store.products.map((p) => [p.id, p]));
+  return store.product_variants.map((v) => {
+    const p = prodMap.get(v.product_id);
+    return {
+      ...v,
+      product_title_en: p?.title_en || "Unknown Product",
+      product_title_bn: p?.title_bn || "অজানা পণ্য",
+      product_slug: p?.slug || "",
+    };
+  });
+}
+
 export async function verifyStockIntegrity(): Promise<{
   totalVariants: number;
   healthyCount: number;

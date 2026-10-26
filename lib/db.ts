@@ -27,6 +27,7 @@ export const db = {
   upsertProduct: localStore.upsertProduct,
 
   // Stock & Inventory
+  getAllVariants: localStore.getAllVariants,
   adjustStock: localStore.adjustStock,
   getStockLedger: localStore.getStockLedger,
   verifyStockIntegrity: localStore.verifyStockIntegrity,
