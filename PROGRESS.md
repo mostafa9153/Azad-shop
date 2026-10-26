@@ -6,7 +6,7 @@
 |---|---|---|---|---|---|
 | **Phase 0** | Foundation, Tokens & Env Check | ✅ PASS | 2026-10-26 | `npm run check:env` PASS (code 0, unblocked); `next build` PASS (0 errors across all routes); UI kit + Pagination + Toaster verified | None. Supabase can connect live anytime; local fallback store active. |
 | **Phase 1** | Database, Schema, Storage & Image Lib | ✅ PASS | 2026-10-26 | `npm run db:migrate` PASS (schema init, atomic RPCs); `npm run audit:rls` PASS (13/13 tables RLS verified); `next build` PASS | None. Full SQL migration, typed store with atomic RPCs, and image pipeline in place. |
-| **Phase 2** | Catalog Seed with Verified Images | ⏳ Queued | — | — | — |
+| **Phase 2** | Catalog Seed with Verified Images | ✅ PASS | 2026-10-26 | `npm run seed` PASS (70 products, 196 variants, 4 collections, 4 coupons); `npm run verify:stock` PASS (196/196 variants in sync); `IMAGE_AUDIT.md` verified 153 asset paths (0 missing); `CREDITS.md` generated | None. Rich bilingual catalog with authentic modest items & zero broken assets. |
 | **Phase 3** | Global Layout, Header, Nav & Search | ⏳ Queued | — | — | — |
 | **Phase 4** | Homepage (DB-Driven, Bilingual) | ⏳ Queued | — | — | — |
 | **Phase 5** | Shop, Categories, Filters & Facets | ⏳ Queued | — | — | — |
