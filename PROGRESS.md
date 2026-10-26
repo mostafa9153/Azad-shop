@@ -8,7 +8,7 @@
 | **Phase 1** | Database, Schema, Storage & Image Lib | ✅ PASS | 2026-10-26 | `npm run db:migrate` PASS (schema init, atomic RPCs); `npm run audit:rls` PASS (13/13 tables RLS verified); `next build` PASS | None. Full SQL migration, typed store with atomic RPCs, and image pipeline in place. |
 | **Phase 2** | Catalog Seed with Verified Images | ✅ PASS | 2026-10-26 | `npm run seed` PASS (70 products, 196 variants, 4 collections, 4 coupons); `npm run verify:stock` PASS (196/196 variants in sync); `IMAGE_AUDIT.md` verified 153 asset paths (0 missing); `CREDITS.md` generated | None. Rich bilingual catalog with authentic modest items & zero broken assets. |
 | **Phase 3** | Global Layout, Header, Nav & Search | ✅ PASS | 2026-10-26 | `next build` PASS (0 errors); 1fr-auto-1fr grid header; Search overlay with live `/api/search` debounce; Mini-cart drawer with free shipping progress; Mobile bottom nav; 4-column footer; Cookie banner & WhatsApp button | None. Tested responsive layout across mobile and desktop. |
-| **Phase 4** | Homepage (DB-Driven, Bilingual) | ⏳ Queued | — | — | — |
+| **Phase 4** | Homepage (DB-Driven, Bilingual) | ✅ PASS | 2026-10-26 | `next build` PASS (0 errors, SSG /bn & /en); DB-driven hero slider; 4-pillar trust strip; 8 Mihrab arch categories; New arrivals grid; 3-piece complete set block; Eid countdown timer; Best sellers; Testimonials & Kolkata showroom directions | None. Fully verified bilingual rendering. |
 | **Phase 5** | Shop, Categories, Filters & Facets | ⏳ Queued | — | — | — |
 | **Phase 6** | Product Page, Sizes, Custom Order | ⏳ Queued | — | — | — |
 | **Phase 7** | Cart, Wishlist & Coupons | ⏳ Queued | — | — | — |
