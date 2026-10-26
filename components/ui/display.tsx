@@ -4,7 +4,7 @@ import * as React from "react";
 import Image from "next/image";
 import { Star, Minus, Plus, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { formatPrice, Locale } from "@/lib/i18n";
+import { formatPrice, toBengaliNumerals, Locale } from "@/lib/i18n";
 
 // SKELETON
 export function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
@@ -290,3 +290,92 @@ export function Breadcrumb({ items }: { items: BreadcrumbItem[] }) {
     </nav>
   );
 }
+
+// PAGINATION
+export interface PaginationProps {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  locale?: Locale;
+  className?: string;
+}
+
+export function Pagination({
+  currentPage,
+  totalPages,
+  onPageChange,
+  locale = "bn",
+  className,
+}: PaginationProps) {
+  if (totalPages <= 1) return null;
+
+  const pages: (number | "...")[] = [];
+  if (totalPages <= 7) {
+    for (let i = 1; i <= totalPages; i++) pages.push(i);
+  } else {
+    pages.push(1);
+    if (currentPage > 3) pages.push("...");
+    const start = Math.max(2, currentPage - 1);
+    const end = Math.min(totalPages - 1, currentPage + 1);
+    for (let i = start; i <= end; i++) pages.push(i);
+    if (currentPage < totalPages - 2) pages.push("...");
+    pages.push(totalPages);
+  }
+
+  const formatNum = (n: number) =>
+    locale === "bn" ? toBengaliNumerals(n) : String(n);
+
+  return (
+    <nav
+      aria-label="Pagination"
+      className={cn("flex items-center justify-center gap-1.5 py-4 select-none", className)}
+    >
+      <button
+        type="button"
+        disabled={currentPage <= 1}
+        onClick={() => onPageChange(currentPage - 1)}
+        className="flex h-9 min-w-9 items-center justify-center rounded-md border border-[#E9DDC9] bg-[#FBF7F0] px-3 text-xs font-medium text-[#14372E] transition-colors hover:bg-[#E9DDC9]/50 disabled:opacity-30 disabled:pointer-events-none"
+        aria-label="Previous page"
+      >
+        {locale === "bn" ? "পূর্ববর্তী" : "Previous"}
+      </button>
+
+      {pages.map((p, idx) =>
+        p === "..." ? (
+          <span
+            key={`ellipsis-${idx}`}
+            className="flex h-9 w-9 items-center justify-center text-xs text-[#1C1B18]/40"
+          >
+            …
+          </span>
+        ) : (
+          <button
+            key={p}
+            type="button"
+            onClick={() => onPageChange(p)}
+            aria-current={p === currentPage ? "page" : undefined}
+            className={cn(
+              "flex h-9 min-w-9 items-center justify-center rounded-md px-3 text-xs font-medium transition-colors",
+              p === currentPage
+                ? "bg-[#14372E] text-[#FBF7F0] shadow-xs"
+                : "border border-[#E9DDC9] bg-[#FBF7F0] text-[#1C1B18] hover:bg-[#E9DDC9]/50"
+            )}
+          >
+            {formatNum(p)}
+          </button>
+        )
+      )}
+
+      <button
+        type="button"
+        disabled={currentPage >= totalPages}
+        onClick={() => onPageChange(currentPage + 1)}
+        className="flex h-9 min-w-9 items-center justify-center rounded-md border border-[#E9DDC9] bg-[#FBF7F0] px-3 text-xs font-medium text-[#14372E] transition-colors hover:bg-[#E9DDC9]/50 disabled:opacity-30 disabled:pointer-events-none"
+        aria-label="Next page"
+      >
+        {locale === "bn" ? "পরবর্তী" : "Next"}
+      </button>
+    </nav>
+  );
+}
+

@@ -30,6 +30,7 @@ import {
   ArchImage,
   Breadcrumb,
   Skeleton,
+  Pagination,
 } from "@/components/ui/display";
 import { Reveal } from "@/components/ui/reveal";
 import { MessageCircle, ShoppingBag, Heart, Sparkles, Globe } from "lucide-react";
@@ -42,6 +43,7 @@ export default function DesignSystemPage() {
   const [qty, setQty] = React.useState(1);
   const [sheetOpen, setSheetOpen] = React.useState(false);
   const [checked, setChecked] = React.useState(true);
+  const [currentPage, setCurrentPage] = React.useState(2);
 
   const t = (k: string) => translate(locale, k);
 
@@ -363,6 +365,76 @@ export default function DesignSystemPage() {
               </TabsContent>
             </Tabs>
           </div>
+        </div>
+      </section>
+
+      {/* 9. Pagination */}
+      <section className="my-12">
+        <SectionHeading
+          title={locale === "bn" ? "পৃষ্ঠা নম্বর ও পেজিনেশন" : "Numbered Pagination"}
+          centered={false}
+        />
+        <div className="rounded-xl border border-[#E9DDC9] bg-white/50 p-6">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={8}
+            onPageChange={setCurrentPage}
+            locale={locale}
+          />
+          <p className="text-center text-xs text-[#1C1B18]/60 mt-2">
+            {locale === "bn"
+              ? `বর্তমান পৃষ্ঠা: ${currentPage} (মোট ৮টি পৃষ্ঠা)`
+              : `Current Page: ${currentPage} of 8`}
+          </p>
+        </div>
+      </section>
+
+      {/* 10. Toasts & Feedback */}
+      <section className="my-12">
+        <SectionHeading
+          title={locale === "bn" ? "টোস্ট নোটিফিকেশন" : "Toast Notifications"}
+          centered={false}
+        />
+        <div className="flex flex-wrap gap-4">
+          <Button
+            variant="forest"
+            size="sm"
+            onClick={() =>
+              toast.success(
+                locale === "bn"
+                  ? "পণ্যটি সফলভাবে ব্যাগে যুক্ত হয়েছে"
+                  : "Item successfully added to bag"
+              )
+            }
+          >
+            {locale === "bn" ? "সাকসেস টোস্ট" : "Success Toast"}
+          </Button>
+          <Button
+            variant="sand"
+            size="sm"
+            onClick={() =>
+              toast.info(
+                locale === "bn"
+                  ? "কুপন কোড EID10 প্রয়োগ করা হয়েছে"
+                  : "Coupon EID10 applied"
+              )
+            }
+          >
+            {locale === "bn" ? "ইনফো টোস্ট" : "Info Toast"}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              toast.error(
+                locale === "bn"
+                  ? "দুঃখিত, স্টক সীমাবদ্ধ রয়েছে"
+                  : "Sorry, stock is limited"
+              )
+            }
+          >
+            {locale === "bn" ? "এরর টোস্ট" : "Error Toast"}
+          </Button>
         </div>
       </section>
     </div>

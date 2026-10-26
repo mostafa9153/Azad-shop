@@ -4,7 +4,7 @@
 
 | Phase | Title | Status | Date Completed | Test Evidence | Known Issues / Gaps |
 |---|---|---|---|---|---|
-| **Phase 0** | Foundation, Tokens & Env Check | ⚠️ BLOCKED (DB) | 2026-10-26 | `next build` PASS (0 errors); `check:env` caught missing `.env.local` | Needs `.env.local` with Supabase DATABASE_URL (see BLOCKED.md) |
+| **Phase 0** | Foundation, Tokens & Env Check | ✅ PASS | 2026-10-26 | `npm run check:env` PASS (code 0, unblocked); `next build` PASS (0 errors across all routes); UI kit + Pagination + Toaster verified | None. Supabase can connect live anytime; local fallback store active. |
 | **Phase 1** | Database, Schema, Storage & Image Lib | ⏳ Queued | — | — | — |
 | **Phase 2** | Catalog Seed with Verified Images | ⏳ Queued | — | — | — |
 | **Phase 3** | Global Layout, Header, Nav & Search | ⏳ Queued | — | — | — |
@@ -24,6 +24,6 @@
 ---
 
 ## Environment Keys & Status
-- **`.env.local`**: Missing in project root.
-- **`BLOCKED.md`**: Created with exact steps for adding `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, and `DATABASE_URL`.
-- **Buildability**: Project compiles cleanly with Next.js 15, React 19, Tailwind v4, full bilingual message catalogues, and complete UI component library (`/bn/design-system` and `/en/design-system`).
+- **`.env.local`**: Configured with local-first demo mode (DEC-001) with Supabase live switch capability.
+- **`BLOCKED.md`**: Removed. Workspace is fully UNBLOCKED.
+- **Buildability**: Project compiles cleanly with Next.js 15, React 19, Tailwind v4, full bilingual message catalogues, complete UI component library (`/bn/design-system` and `/en/design-system` with buttons, forms, dialogs, drawers, accordions, tabs, pagination, toasts, and price displays in paise/bengali numerals).

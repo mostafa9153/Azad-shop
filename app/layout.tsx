@@ -21,7 +21,18 @@ export default function RootLayout({
     >
       <body className="min-h-screen bg-[#FBF7F0] text-[#1C1B18] antialiased">
         {children}
-        <Toaster position="top-right" richColors />
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            style: {
+              background: "#FBF7F0",
+              color: "#1C1B18",
+              border: "1px solid #E9DDC9",
+              fontFamily: "var(--font-hind-siliguri), var(--font-jost), sans-serif",
+            },
+            className: "shadow-md rounded-lg",
+          }}
+        />
       </body>
     </html>
   );
