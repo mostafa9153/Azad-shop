@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-cream: #FBF7F0;
+    --sand: #E9DDC9;
+    --sand-light: #F4EFE6;
+    --forest: #14372E;
+    --forest-light: #1D4C40;
+    --gold: #A8834A;
+    --gold-light: #C5A065;
+    --charcoal: #1C1B18;
+    --charcoal-muted: #59564E;
+    --sage: #DDE5DB;
+    --sage-light: #EEF3ED;
+    --border-color: #E6DCce;
+  }
+
+  body {
+    background-color: var(--bg-cream);
+    color: var(--charcoal);
+    font-family: var(--font-jost), sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Bengali typography rules: line-height 1.7-1.8, no uppercase/tracking */
+  html[lang="bn"] body,
+  .bn-text {
+    font-family: var(--font-hind-siliguri), sans-serif;
+    line-height: 1.75;
+    letter-spacing: normal !important;
+    text-transform: none !important;
+  }
+
+  html[lang="bn"] h1,
+  html[lang="bn"] h2,
+  html[lang="bn"] h3,
+  html[lang="bn"] h4,
+  .bn-heading {
+    font-family: var(--font-noto-serif-bengali), serif;
+    letter-spacing: normal !important;
+    text-transform: none !important;
+  }
+
+  /* Latin typography rules */
+  html[lang="en"] h1,
+  html[lang="en"] h2,
+  html[lang="en"] h3,
+  html[lang="en"] h4,
+  .en-heading {
+    font-family: var(--font-cormorant), serif;
+  }
+}
+
+/* Mihrab Arch Shape utility */
+.mihrab-arch {
+  border-top-left-radius: 9999px;
+  border-top-right-radius: 9999px;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+.mihrab-arch-sm {
+  border-top-left-radius: 40px;
+  border-top-right-radius: 40px;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+/* Subtle Geometric Pattern */
+.bg-islamic-pattern {
+  background-color: #FBF7F0;
+  background-image: radial-gradient(#14372E 0.75px, transparent 0.75px), radial-gradient(#A8834A 0.75px, #FBF7F0 0.75px);
+  background-size: 30px 30px;
+  background-position: 0 0, 15px 15px;
+  background-opacity: 0.04;
+}
+
+/* Smooth motion */
+.transition-luxury {
+  transition: all 500ms cubic-bezier(0.22, 1, 0.36, 1);
+}
