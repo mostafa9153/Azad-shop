@@ -559,6 +559,17 @@ export async function createOrder(data: {
     const orderNumber = `AH-${Date.now().toString().slice(-6)}-${Math.floor(10 + Math.random() * 90)}`;
     const orderId = `ord_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
+    // 4.5. Resolve missing variant_id to default product variant if available
+    for (const item of data.items) {
+      if (!item.variant_id && item.product_id) {
+        const defaultVar = store.product_variants.find((v) => v.product_id === item.product_id);
+        if (defaultVar) {
+          item.variant_id = defaultVar.id;
+          if (!item.sku) item.sku = defaultVar.sku;
+        }
+      }
+    }
+
     // 5. ATOMIC PRE-VALIDATION: Ensure ALL items have sufficient stock before making any deductions
     for (const item of data.items) {
       if (item.variant_id) {

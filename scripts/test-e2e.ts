@@ -4,6 +4,8 @@
  * Tailoring Queue, Guest Tracking, and Stock Ledger Integrity.
  */
 
+import fs from "fs";
+import path from "path";
 import { db } from "../lib/db";
 import { formatPrice } from "../lib/i18n";
 import { CustomMeasurements, OrderStatus, StockChangeType } from "../lib/types";
@@ -454,6 +456,79 @@ async function runTestSuite() {
     "Restore variant stock after concurrency test",
     "CONCURRENCY-CLEANUP"
   );
+
+  // 15. Product Image & Viewing Assets Verification
+  console.log("\n▶ TEST SUITE 15: Product Image & Viewing Assets Verification");
+  const allEnrichedProducts = await db.getProducts();
+  const productsWithAtLeastTwoImages = allEnrichedProducts.filter(
+    (p) => p.images && p.images.length >= 2
+  );
+  assert(
+    productsWithAtLeastTwoImages.length === allEnrichedProducts.length,
+    `All 70 catalog products possess >= 2 authentic clothing images (${productsWithAtLeastTwoImages.length}/${allEnrichedProducts.length})`
+  );
+
+  const rawStore = JSON.parse(fs.readFileSync(path.join(process.cwd(), "data", "store.json"), "utf-8"));
+  let missingDiskImages = 0;
+  for (const img of rawStore.product_images || []) {
+    const diskPath = path.join(process.cwd(), "public", img.image_url);
+    if (!fs.existsSync(diskPath) || fs.statSync(diskPath).size === 0) {
+      missingDiskImages++;
+    }
+  }
+  for (const cat of rawStore.categories || []) {
+    if (cat.image_url) {
+      const diskPath = path.join(process.cwd(), "public", cat.image_url);
+      if (!fs.existsSync(diskPath) || fs.statSync(diskPath).size === 0) {
+        missingDiskImages++;
+      }
+    }
+  }
+  assert(
+    missingDiskImages === 0,
+    `Zero broken image paths on disk (verified ${rawStore.product_images.length + rawStore.categories.length} total image references, missing: ${missingDiskImages})`
+  );
+
+  // Test automatic variant resolution for order without explicit variant_id
+  const testAutoVarProd = allEnrichedProducts[0];
+  const autoVarOrder = await db.createOrder({
+    customer_name: "Auto Variant Customer",
+    customer_phone: "+919876543210",
+    customer_email: "autovar@example.com",
+    shipping_address: {
+      name: "Auto Variant",
+      phone: "+919876543210",
+      address_line1: "Park Circus",
+      city: "Kolkata",
+      state: "West Bengal",
+      pincode: "700017",
+    },
+    items: [
+      {
+        product_id: testAutoVarProd.id,
+        title_en: testAutoVarProd.title_en,
+        title_bn: testAutoVarProd.title_bn,
+        sku: testAutoVarProd.sku,
+        size: "Standard",
+        color_en: "Default",
+        color_bn: "ডিফল্ট",
+        quantity: 1,
+        price_paise: testAutoVarProd.base_price_paise,
+        is_custom_size: false,
+      },
+    ],
+    shipping_fee_paise: 0,
+    payment_method: "demo_upi",
+    payment_status: "paid",
+  });
+
+  assert(
+    Boolean(autoVarOrder.items?.[0]?.variant_id),
+    `Order item without explicit variant_id automatically resolved to variant: ${autoVarOrder.items?.[0]?.variant_id}`
+  );
+
+  // Cancel autoVarOrder to clean up stock
+  await db.cancelOrder(autoVarOrder.id, "Cleanup auto variant test order");
 
   // Final Strict Stock Verification
   const finalIntegrity = await db.verifyStockIntegrity();

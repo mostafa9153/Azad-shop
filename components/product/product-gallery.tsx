@@ -21,10 +21,49 @@ export function ProductGallery({ images, title, locale = "bn" }: ProductGalleryP
   const [lightboxPan, setLightboxPan] = useState({ x: 50, y: 50 });
 
   const stageRef = useRef<HTMLDivElement>(null);
-  const safeImages = images && images.length > 0 ? images : [{ id: "placeholder", product_id: "", image_url: "/placeholder-product.svg", display_order: 0, is_primary: true }];
-  const activeImage = safeImages[activeIndex]?.image_url || "/placeholder-product.svg";
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const lightboxTouchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const lastTapRef = useRef<number>(0);
 
-  // Mouse move handler for interactive stage lens zoom
+  const safeImages =
+    images && images.length > 0
+      ? images
+      : [{ id: "placeholder", product_id: "", image_url: "/placeholder-product.svg", display_order: 0, is_primary: true }];
+
+  // Reset indices and zoom if image list changes
+  useEffect(() => {
+    setActiveIndex(0);
+    setLightboxZoom(1);
+    setLightboxPan({ x: 50, y: 50 });
+  }, [images]);
+
+  // Lock body scroll when Lightbox is active
+  useEffect(() => {
+    if (!isLightboxOpen) return;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isLightboxOpen]);
+
+  const currentIndex = activeIndex >= 0 && activeIndex < safeImages.length ? activeIndex : 0;
+  const activeImage = safeImages[currentIndex]?.image_url || "/placeholder-product.svg";
+
+  // Navigation handlers
+  const handleNext = useCallback(() => {
+    setActiveIndex((prev) => (prev + 1) % safeImages.length);
+    setLightboxZoom(1);
+    setLightboxPan({ x: 50, y: 50 });
+  }, [safeImages.length]);
+
+  const handlePrev = useCallback(() => {
+    setActiveIndex((prev) => (prev - 1 + safeImages.length) % safeImages.length);
+    setLightboxZoom(1);
+    setLightboxPan({ x: 50, y: 50 });
+  }, [safeImages.length]);
+
+  // Stage mouse movement for lens zoom
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!stageRef.current) return;
     const rect = stageRef.current.getBoundingClientRect();
@@ -39,19 +78,28 @@ export function ProductGallery({ images, title, locale = "bn" }: ProductGalleryP
     setZoomOrigin({ x: 50, y: 50 });
   };
 
+  // Stage touch swipe handlers
+  const handleStageTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (e.touches.length === 1) {
+      touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }
+  };
+
+  const handleStageTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!touchStartRef.current) return;
+    const deltaX = e.changedTouches[0].clientX - touchStartRef.current.x;
+    const deltaY = e.changedTouches[0].clientY - touchStartRef.current.y;
+    if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY)) {
+      if (deltaX < 0) {
+        handleNext();
+      } else {
+        handlePrev();
+      }
+    }
+    touchStartRef.current = null;
+  };
+
   // Lightbox keyboard navigation & escape listener
-  const handleNext = useCallback(() => {
-    setActiveIndex((prev) => (prev + 1) % safeImages.length);
-    setLightboxZoom(1);
-    setLightboxPan({ x: 50, y: 50 });
-  }, [safeImages.length]);
-
-  const handlePrev = useCallback(() => {
-    setActiveIndex((prev) => (prev - 1 + safeImages.length) % safeImages.length);
-    setLightboxZoom(1);
-    setLightboxPan({ x: 50, y: 50 });
-  }, [safeImages.length]);
-
   useEffect(() => {
     if (!isLightboxOpen) return;
 
@@ -79,6 +127,48 @@ export function ProductGallery({ images, title, locale = "bn" }: ProductGalleryP
     setLightboxPan({ x, y });
   };
 
+  // Lightbox touch pan & swipe
+  const handleLightboxTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (e.touches.length === 1) {
+      lightboxTouchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }
+  };
+
+  const handleLightboxTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (lightboxZoom <= 1) return;
+    if (e.touches.length === 1) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = Math.max(0, Math.min(100, ((e.touches[0].clientX - rect.left) / rect.width) * 100));
+      const y = Math.max(0, Math.min(100, ((e.touches[0].clientY - rect.top) / rect.height) * 100));
+      setLightboxPan({ x, y });
+    }
+  };
+
+  const handleLightboxTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    // Check for double-tap zoom
+    const now = Date.now();
+    if (now - lastTapRef.current < 300) {
+      toggleLightboxZoom();
+      lastTapRef.current = 0;
+      return;
+    }
+    lastTapRef.current = now;
+
+    // Check for swipe when not zoomed
+    if (lightboxZoom === 1 && lightboxTouchStartRef.current) {
+      const deltaX = e.changedTouches[0].clientX - lightboxTouchStartRef.current.x;
+      const deltaY = e.changedTouches[0].clientY - lightboxTouchStartRef.current.y;
+      if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY)) {
+        if (deltaX < 0) {
+          handleNext();
+        } else {
+          handlePrev();
+        }
+      }
+    }
+    lightboxTouchStartRef.current = null;
+  };
+
   const toggleLightboxZoom = () => {
     setLightboxZoom((prev) => (prev > 1 ? 1 : 2.5));
   };
@@ -91,6 +181,8 @@ export function ProductGallery({ images, title, locale = "bn" }: ProductGalleryP
         onMouseMove={handleMouseMove}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        onTouchStart={handleStageTouchStart}
+        onTouchEnd={handleStageTouchEnd}
         onClick={() => {
           setIsLightboxOpen(true);
           setLightboxZoom(1);
@@ -114,14 +206,14 @@ export function ProductGallery({ images, title, locale = "bn" }: ProductGalleryP
         {/* Hover Hint Overlay (disappears when hovering) */}
         {!isHoverZooming && (
           <div className="absolute top-4 left-4 px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-xs text-[#FBF7F0] text-[11px] font-medium pointer-events-none transition-opacity">
-            {locale === "bn" ? "জুম করতে মাউস ঘুরান" : "Hover to zoom details"}
+            {locale === "bn" ? "জুম করতে মাউস ঘুরান" : "Hover or tap to zoom details"}
           </div>
         )}
 
         {/* Image Counter Badge */}
         {safeImages.length > 1 && (
           <div className="absolute top-4 right-4 px-2.5 py-1 rounded-full bg-white/80 backdrop-blur-xs text-[#14372E] text-xs font-bold shadow-xs pointer-events-none">
-            {activeIndex + 1} / {safeImages.length}
+            {currentIndex + 1} / {safeImages.length}
           </div>
         )}
 
@@ -149,7 +241,7 @@ export function ProductGallery({ images, title, locale = "bn" }: ProductGalleryP
                 e.stopPropagation();
                 handlePrev();
               }}
-              className="absolute left-3 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-white/80 hover:bg-white text-[#1C1B18] shadow-md transition-all opacity-0 group-hover:opacity-100 hover:scale-105"
+              className="absolute left-3 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-white/80 hover:bg-white text-[#1C1B18] shadow-md transition-all opacity-80 sm:opacity-0 sm:group-hover:opacity-100 hover:scale-105"
               aria-label="Previous photo"
             >
               <ChevronLeft className="w-5 h-5" />
@@ -160,7 +252,7 @@ export function ProductGallery({ images, title, locale = "bn" }: ProductGalleryP
                 e.stopPropagation();
                 handleNext();
               }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-white/80 hover:bg-white text-[#1C1B18] shadow-md transition-all opacity-0 group-hover:opacity-100 hover:scale-105"
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-white/80 hover:bg-white text-[#1C1B18] shadow-md transition-all opacity-80 sm:opacity-0 sm:group-hover:opacity-100 hover:scale-105"
               aria-label="Next photo"
             >
               <ChevronRight className="w-5 h-5" />
@@ -178,7 +270,7 @@ export function ProductGallery({ images, title, locale = "bn" }: ProductGalleryP
               type="button"
               onClick={() => setActiveIndex(idx)}
               className={`relative w-20 h-24 rounded-2xl overflow-hidden border-2 shrink-0 transition-all ${
-                activeIndex === idx
+                currentIndex === idx
                   ? "border-[#14372E] ring-2 ring-[#14372E]/30 scale-102"
                   : "border-[#E9DDC9] opacity-70 hover:opacity-100"
               }`}
@@ -209,19 +301,19 @@ export function ProductGallery({ images, title, locale = "bn" }: ProductGalleryP
         >
           {/* Lightbox Header Bar */}
           <div
-            className="flex items-center justify-between z-10 w-full max-w-6xl mx-auto"
+            className="flex items-center justify-between z-10 w-full max-w-6xl mx-auto gap-3"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="text-white/90">
-              <h3 className="font-serif text-base sm:text-lg font-bold">{title}</h3>
+            <div className="text-white/90 min-w-0 pr-2">
+              <h3 className="font-serif text-base sm:text-lg font-bold truncate">{title}</h3>
               <p className="text-xs text-white/60">
                 {locale === "bn"
-                  ? `ছবি ${activeIndex + 1} / ${safeImages.length}`
-                  : `Image ${activeIndex + 1} of ${safeImages.length}`}
+                  ? `ছবি ${currentIndex + 1} / ${safeImages.length}`
+                  : `Image ${currentIndex + 1} of ${safeImages.length}`}
               </p>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
               {/* Zoom toggle in lightbox */}
               <button
                 type="button"
@@ -262,6 +354,9 @@ export function ProductGallery({ images, title, locale = "bn" }: ProductGalleryP
             className="relative flex-1 w-full max-w-5xl mx-auto flex items-center justify-center overflow-hidden my-4"
             onClick={(e) => e.stopPropagation()}
             onMouseMove={handleLightboxMouseMove}
+            onTouchStart={handleLightboxTouchStart}
+            onTouchMove={handleLightboxTouchMove}
+            onTouchEnd={handleLightboxTouchEnd}
           >
             <div
               onClick={toggleLightboxZoom}
@@ -315,7 +410,7 @@ export function ProductGallery({ images, title, locale = "bn" }: ProductGalleryP
 
           {/* Lightbox Bottom Thumbnail Bar */}
           <div
-            className="flex justify-center items-center gap-2 z-10 overflow-x-auto py-2"
+            className="flex justify-center items-center gap-2 z-10 overflow-x-auto py-2 max-w-full"
             onClick={(e) => e.stopPropagation()}
           >
             {safeImages.map((img, idx) => (
@@ -326,8 +421,8 @@ export function ProductGallery({ images, title, locale = "bn" }: ProductGalleryP
                   setActiveIndex(idx);
                   setLightboxZoom(1);
                 }}
-                className={`relative w-14 h-18 rounded-xl overflow-hidden border-2 transition-all ${
-                  activeIndex === idx
+                className={`relative w-14 h-18 rounded-xl overflow-hidden border-2 transition-all shrink-0 ${
+                  currentIndex === idx
                     ? "border-[#C5A059] ring-2 ring-[#C5A059]/40 scale-105"
                     : "border-white/20 opacity-60 hover:opacity-100"
                 }`}

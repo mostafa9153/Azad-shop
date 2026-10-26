@@ -73,7 +73,7 @@ export function QuickViewDialog({ product, isOpen, onClose, locale }: QuickViewD
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-3xl bg-[#FBF7F0] p-0 border border-[#E9DDC9] overflow-hidden rounded-2xl shadow-2xl">
+      <DialogContent className="max-w-3xl bg-[#FBF7F0] p-0 border border-[#E9DDC9] rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="sr-only">
           <DialogTitle>{locale === "bn" ? product.title_bn : product.title_en}</DialogTitle>
         </DialogHeader>
