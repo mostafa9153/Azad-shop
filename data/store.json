@@ -2341,14 +2341,14 @@
       "color_en": "Jet Black",
       "color_bn": "কুচকুচে কালো",
       "color_hex": "#1C1B18",
-      "stock_quantity": 14,
+      "stock_quantity": 15,
       "low_stock_threshold": 4,
       "price_paise": 249900,
       "compare_at_price_paise": 289900,
       "is_active": true,
       "weight_grams": 650,
       "created_at": "2026-10-26T18:46:40.245Z",
-      "updated_at": "2026-10-26T18:46:40.245Z"
+      "updated_at": "2026-10-26T19:32:52.663Z"
     },
     {
       "id": "var_1_2",
@@ -6939,7 +6939,7 @@
       "min_order_value_paise": 100000,
       "max_discount_paise": 40000,
       "usage_limit": 500,
-      "usage_count": 14,
+      "usage_count": 16,
       "is_active": true,
       "expires_at": "2026-12-31T23:59:59Z"
     },
@@ -6986,9 +6986,236 @@
       "expires_at": "2026-12-31T23:59:59Z"
     }
   ],
-  "orders": [],
-  "order_items": [],
+  "orders": [
+    {
+      "id": "ord_1793043172649_c4t0e",
+      "order_number": "AH-172649-71",
+      "customer_name": "রাবেয়া খাতুন (Rabeya Khatun)",
+      "customer_email": "rabeya.test@example.com",
+      "customer_phone": "+919876543210",
+      "shipping_address": {
+        "name": "Rabeya Khatun",
+        "phone": "+919876543210",
+        "address_line1": "42 Zakaria Street, 2nd Floor",
+        "city": "Kolkata",
+        "state": "West Bengal",
+        "pincode": "700073",
+        "country": "India"
+      },
+      "billing_address": {
+        "name": "Rabeya Khatun",
+        "phone": "+919876543210",
+        "address_line1": "42 Zakaria Street, 2nd Floor",
+        "city": "Kolkata",
+        "state": "West Bengal",
+        "pincode": "700073",
+        "country": "India"
+      },
+      "items_total_paise": 249900,
+      "discount_total_paise": 24990,
+      "shipping_fee_paise": 0,
+      "cod_fee_paise": 0,
+      "custom_size_fee_paise": 15000,
+      "total_paise": 239910,
+      "gst_total_paise": 11900,
+      "payment_method": "demo_upi",
+      "payment_status": "paid",
+      "order_status": "tailoring",
+      "shipping_method": "Express West Bengal Courier",
+      "coupon_code": "AZAD10",
+      "created_at": "2026-10-26T19:32:52.646Z",
+      "updated_at": "2026-10-26T19:32:52.646Z",
+      "items": [
+        {
+          "id": "item_1793043172655_mjk0b",
+          "order_id": "ord_1793043172649_c4t0e",
+          "product_id": "prod_001",
+          "variant_id": "var_1_1",
+          "title_en": "Korean Nida Classic Flared Burkha",
+          "title_bn": "কোরিয়ান নিদা ক্লাসিক ফ্লেয়ার্ড বোরকা",
+          "sku": "AH-BUR-01-52-JET",
+          "size": "52",
+          "color_en": "Jet Black",
+          "color_bn": "কুচকুচে কালো",
+          "quantity": 1,
+          "price_paise": 249900,
+          "total_paise": 249900,
+          "custom_measurements": {
+            "length_inches": 54,
+            "chest_inches": 38,
+            "waist_inches": 32,
+            "hips_inches": 42,
+            "shoulder_inches": 15,
+            "sleeve_inches": 27,
+            "special_notes": "Kolkata bespoke order test"
+          },
+          "is_custom_size": true,
+          "image_url": "/demo/burkha-classic-black.svg"
+        }
+      ]
+    },
+    {
+      "id": "ord_1793043098749_k397a",
+      "order_number": "AH-098749-88",
+      "customer_name": "রাবেয়া খাতুন (Rabeya Khatun)",
+      "customer_email": "rabeya.test@example.com",
+      "customer_phone": "+919876543210",
+      "shipping_address": {
+        "name": "Rabeya Khatun",
+        "phone": "+919876543210",
+        "address_line1": "42 Zakaria Street, 2nd Floor",
+        "city": "Kolkata",
+        "state": "West Bengal",
+        "pincode": "700073",
+        "country": "India"
+      },
+      "billing_address": {
+        "name": "Rabeya Khatun",
+        "phone": "+919876543210",
+        "address_line1": "42 Zakaria Street, 2nd Floor",
+        "city": "Kolkata",
+        "state": "West Bengal",
+        "pincode": "700073",
+        "country": "India"
+      },
+      "items_total_paise": 249900,
+      "discount_total_paise": 24990,
+      "shipping_fee_paise": 0,
+      "cod_fee_paise": 0,
+      "custom_size_fee_paise": 15000,
+      "total_paise": 239910,
+      "gst_total_paise": 11900,
+      "payment_method": "demo_upi",
+      "payment_status": "paid",
+      "order_status": "tailoring",
+      "shipping_method": "Express West Bengal Courier",
+      "coupon_code": "AZAD10",
+      "created_at": "2026-10-26T19:31:38.747Z",
+      "updated_at": "2026-10-26T19:31:38.747Z",
+      "items": [
+        {
+          "id": "item_1793043098749_2yuq1",
+          "order_id": "ord_1793043098749_k397a",
+          "product_id": "prod_001",
+          "variant_id": "var_1_1",
+          "title_en": "Korean Nida Classic Flared Burkha",
+          "title_bn": "কোরিয়ান নিদা ক্লাসিক ফ্লেয়ার্ড বোরকা",
+          "sku": "AH-BUR-01-52-JET",
+          "size": "52",
+          "color_en": "Jet Black",
+          "color_bn": "কুচকুচে কালো",
+          "quantity": 1,
+          "price_paise": 249900,
+          "total_paise": 249900,
+          "custom_measurements": {
+            "length_inches": 54,
+            "chest_inches": 38,
+            "waist_inches": 32,
+            "hips_inches": 42,
+            "shoulder_inches": 15,
+            "sleeve_inches": 27,
+            "special_notes": "Kolkata bespoke order test"
+          },
+          "is_custom_size": true,
+          "image_url": "/demo/burkha-classic-black.svg"
+        }
+      ]
+    }
+  ],
+  "order_items": [
+    {
+      "id": "item_1793043098749_2yuq1",
+      "order_id": "ord_1793043098749_k397a",
+      "product_id": "prod_001",
+      "variant_id": "var_1_1",
+      "title_en": "Korean Nida Classic Flared Burkha",
+      "title_bn": "কোরিয়ান নিদা ক্লাসিক ফ্লেয়ার্ড বোরকা",
+      "sku": "AH-BUR-01-52-JET",
+      "size": "52",
+      "color_en": "Jet Black",
+      "color_bn": "কুচকুচে কালো",
+      "quantity": 1,
+      "price_paise": 249900,
+      "total_paise": 249900,
+      "custom_measurements": {
+        "length_inches": 54,
+        "chest_inches": 38,
+        "waist_inches": 32,
+        "hips_inches": 42,
+        "shoulder_inches": 15,
+        "sleeve_inches": 27,
+        "special_notes": "Kolkata bespoke order test"
+      },
+      "is_custom_size": true,
+      "image_url": "/demo/burkha-classic-black.svg"
+    },
+    {
+      "id": "item_1793043172655_mjk0b",
+      "order_id": "ord_1793043172649_c4t0e",
+      "product_id": "prod_001",
+      "variant_id": "var_1_1",
+      "title_en": "Korean Nida Classic Flared Burkha",
+      "title_bn": "কোরিয়ান নিদা ক্লাসিক ফ্লেয়ার্ড বোরকা",
+      "sku": "AH-BUR-01-52-JET",
+      "size": "52",
+      "color_en": "Jet Black",
+      "color_bn": "কুচকুচে কালো",
+      "quantity": 1,
+      "price_paise": 249900,
+      "total_paise": 249900,
+      "custom_measurements": {
+        "length_inches": 54,
+        "chest_inches": 38,
+        "waist_inches": 32,
+        "hips_inches": 42,
+        "shoulder_inches": 15,
+        "sleeve_inches": 27,
+        "special_notes": "Kolkata bespoke order test"
+      },
+      "is_custom_size": true,
+      "image_url": "/demo/burkha-classic-black.svg"
+    }
+  ],
   "stock_ledger": [
+    {
+      "id": "led_1793043172663_eyldq",
+      "variant_id": "var_1_1",
+      "sku": "AH-BUR-01-52-JET",
+      "change_type": "adjustment",
+      "quantity_change": 1,
+      "previous_quantity": 14,
+      "new_quantity": 15,
+      "reference_id": "TEST-CLEANUP",
+      "note": "Restored test order stock delta",
+      "created_at": "2026-10-26T19:32:52.663Z",
+      "created_by": "system"
+    },
+    {
+      "id": "led_1793043172650_t7i99",
+      "variant_id": "var_1_1",
+      "sku": "AH-BUR-01-52-JET",
+      "change_type": "tailoring_allocated",
+      "quantity_change": -1,
+      "previous_quantity": 15,
+      "new_quantity": 14,
+      "reference_id": "AH-172649-71",
+      "note": "Order custom tailoring: রাবেয়া খাতুন (Rabeya Khatun) (+919876543210)",
+      "created_at": "2026-10-26T19:32:52.650Z",
+      "created_by": "checkout"
+    },
+    {
+      "id": "led_1793043098757_9b1mc",
+      "variant_id": "var_1_1",
+      "sku": "AH-BUR-01-52-JET",
+      "change_type": "adjustment",
+      "quantity_change": 1,
+      "previous_quantity": 14,
+      "new_quantity": 15,
+      "reference_id": "TEST-CLEANUP",
+      "note": "Restored test order stock delta",
+      "created_at": "2026-10-26T19:31:38.757Z",
+      "created_by": "system"
+    },
     {
       "id": "led_init_var_1_1",
       "variant_id": "var_1_1",
@@ -9538,7 +9765,58 @@
       "created_by": "system_seeder"
     }
   ],
-  "tailoring_queue": [],
+  "tailoring_queue": [
+    {
+      "id": "tailor_1793043172655_mcje7",
+      "order_id": "ord_1793043172649_c4t0e",
+      "order_number": "AH-172649-71",
+      "order_item_id": "item_1793043172655_mjk0b",
+      "customer_name": "রাবেয়া খাতুন (Rabeya Khatun)",
+      "customer_phone": "+919876543210",
+      "product_title_en": "Korean Nida Classic Flared Burkha",
+      "product_title_bn": "কোরিয়ান নিদা ক্লাসিক ফ্লেয়ার্ড বোরকা",
+      "measurements": {
+        "length_inches": 54,
+        "chest_inches": 38,
+        "waist_inches": 32,
+        "hips_inches": 42,
+        "shoulder_inches": 15,
+        "sleeve_inches": 27,
+        "special_notes": "Kolkata bespoke order test"
+      },
+      "status": "stitching",
+      "notes": "Custom size request for কোরিয়ান নিদা ক্লাসিক ফ্লেয়ার্ড বোরকা",
+      "due_date": "2026-10-30T19:32:52.655Z",
+      "created_at": "2026-10-26T19:32:52.646Z",
+      "updated_at": "2026-10-26T19:32:52.658Z",
+      "assigned_tailor": "ওস্তাদ রফিক (Zakaria St)"
+    },
+    {
+      "id": "tailor_1793043098749_cryoa",
+      "order_id": "ord_1793043098749_k397a",
+      "order_number": "AH-098749-88",
+      "order_item_id": "item_1793043098749_2yuq1",
+      "customer_name": "রাবেয়া খাতুন (Rabeya Khatun)",
+      "customer_phone": "+919876543210",
+      "product_title_en": "Korean Nida Classic Flared Burkha",
+      "product_title_bn": "কোরিয়ান নিদা ক্লাসিক ফ্লেয়ার্ড বোরকা",
+      "measurements": {
+        "length_inches": 54,
+        "chest_inches": 38,
+        "waist_inches": 32,
+        "hips_inches": 42,
+        "shoulder_inches": 15,
+        "sleeve_inches": 27,
+        "special_notes": "Kolkata bespoke order test"
+      },
+      "status": "stitching",
+      "notes": "Custom size request for কোরিয়ান নিদা ক্লাসিক ফ্লেয়ার্ড বোরকা",
+      "due_date": "2026-10-30T19:31:38.749Z",
+      "created_at": "2026-10-26T19:31:38.747Z",
+      "updated_at": "2026-10-26T19:31:38.752Z",
+      "assigned_tailor": "ওস্তাদ রফিক (Zakaria St)"
+    }
+  ],
   "reviews": [
     {
       "id": "rev_01",

@@ -502,21 +502,23 @@ export async function createOrder(data: {
     itemsTotal - discountTotal + data.shipping_fee_paise + (data.cod_fee_paise || 0) + customFeeTotal
   );
 
-  // 4. Atomically check and deduct stock for standard items
+  // 4. Generate Order Number & ID
+  const orderNumber = `AH-${Date.now().toString().slice(-6)}-${Math.floor(10 + Math.random() * 90)}`;
+  const orderId = `ord_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+
+  // 5. Atomically check and deduct/allocate stock
   for (const item of data.items) {
-    if (!item.is_custom_size && item.variant_id) {
+    if (item.variant_id) {
       await adjustStock(
         item.variant_id,
         -item.quantity,
-        "sale",
-        `Order sale: ${data.customer_name} (${data.customer_phone})`
+        item.is_custom_size ? "tailoring_allocated" : "sale",
+        `Order ${item.is_custom_size ? "custom tailoring" : "sale"}: ${data.customer_name} (${data.customer_phone})`,
+        orderNumber,
+        "checkout"
       );
     }
   }
-
-  // 5. Generate Order Number
-  const orderNumber = `AH-${Date.now().toString().slice(-6)}-${Math.floor(10 + Math.random() * 90)}`;
-  const orderId = `ord_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
   // Determine order status
   const hasCustom = data.items.some((i) => i.is_custom_size);
