@@ -39,9 +39,9 @@ export function CheckoutForm({ locale }: CheckoutFormProps) {
   const [email, setEmail] = useState("");
   const [addressLine1, setAddressLine1] = useState("");
   const [addressLine2, setAddressLine2] = useState("");
-  const [city, setCity] = useState("Kolkata");
+  const [city, setCity] = useState("Bardhaman");
   const [state, setState] = useState("West Bengal");
-  const [pincode, setPincode] = useState("700017");
+  const [pincode, setPincode] = useState("713101");
   const [deliveryType, setDeliveryType] = useState<"courier" | "pickup">("courier");
   const [notes, setNotes] = useState("");
 
@@ -214,7 +214,7 @@ export function CheckoutForm({ locale }: CheckoutFormProps) {
               {locale === "bn" ? "গ্রাহকের তথ্য ও ডেলিভারি ঠিকানা" : "Customer & Shipping Information"}
             </h2>
             <p className="text-xs text-[#1C1B18]/70 mt-1">
-              {locale === "bn" ? "পশ্চিমবঙ্গ জুড়ে হোম ডেলিভারি বা পার্ক সার্কাস শোরুম পিকআপ।" : "Courier delivery across India or store pickup at Park Circus, Kolkata."}
+              {locale === "bn" ? "পশ্চিমবঙ্গ জুড়ে হোম ডেলিভারি বা বর্ধমান শোরুম পিকআপ।" : "Courier delivery across India or store pickup at Bardhaman atelier."}
             </p>
           </div>
 
@@ -252,10 +252,10 @@ export function CheckoutForm({ locale }: CheckoutFormProps) {
               <Store className="w-5 h-5 text-[#14372E] shrink-0 mt-0.5" />
               <div>
                 <h4 className="text-xs font-bold text-[#14372E]">
-                  {locale === "bn" ? "পার্ক সার্কাস শোরুম পিকআপ" : "Showroom Pickup (Free)"}
+                  {locale === "bn" ? "বর্ধমান শোরুম পিকআপ" : "Showroom Pickup (Free)"}
                 </h4>
                 <p className="text-[11px] text-[#1C1B18]/60 mt-0.5">
-                  {locale === "bn" ? "সরাসরি শোরুমে এসে সংগ্রহ করুন" : "Pick up at Kolkata store"}
+                  {locale === "bn" ? "সরাসরি শোরুমে এসে সংগ্রহ করুন" : "Pick up at Bardhaman store"}
                 </p>
               </div>
             </button>
@@ -344,7 +344,7 @@ export function CheckoutForm({ locale }: CheckoutFormProps) {
                   maxLength={6}
                   value={pincode}
                   onChange={(e) => setPincode(e.target.value)}
-                  placeholder="700017"
+                  placeholder="713101"
                   className="w-full bg-[#FBF7F0] border border-[#E9DDC9] rounded-xl px-3.5 py-2.5 text-xs font-mono font-bold text-[#14372E] focus:outline-none focus:border-[#14372E]"
                   required
                 />

@@ -333,20 +333,20 @@ export default async function HomePage({
         </div>
       </section>
 
-      {/* 9. Kolkata Showroom Location & Directions */}
+      {/* 9. Bardhaman Showroom Location & Directions */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="bg-[#E9DDC9]/40 border border-[#E9DDC9] rounded-3xl p-6 sm:p-10 flex flex-col lg:flex-row items-center justify-between gap-8">
           <div className="space-y-4 max-w-xl">
             <span className="text-xs font-bold text-[#14372E] tracking-widest uppercase">
-              {locale === "bn" ? "সরাসরি শোরুমে আসুন" : "Visit Our Kolkata Showroom"}
+              {locale === "bn" ? "সরাসরি শোরুমে আসুন" : "Visit Our Bardhaman Showroom"}
             </span>
             <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#14372E]">
-              {locale === "bn" ? "পার্ক সার্কাস ও জাকারিয়া স্ট্রিট শোরুম" : "Park Circus & Zakaria Street Atelier"}
+              {locale === "bn" ? "বর্ধমান স্টেশন ও কার্জন গেট শোরুম" : "Bardhaman Station & Curzon Gate Atelier"}
             </h2>
             <p className="text-xs sm:text-sm text-[#1C1B18]/80 leading-relaxed">
               {locale === "bn"
-                ? "অনলাইনে অর্ডারের পাশাপাশি আমাদের শোরুমে এসে সরাসরি ফ্যাব্রিক পরীক্ষা করে দেখুন ও দক্ষ দরজি দিয়ে ট্রায়াল নিন।"
-                : "Experience the touch of authentic Korean Nida and Medina Silk in person, with on-site custom tailoring fitting consultations."}
+                ? "অনলাইনে অর্ডারের পাশাপাশি আমাদের বর্ধমান শোরুমে এসে সরাসরি ফ্যাব্রিক পরীক্ষা করে দেখুন ও দক্ষ কারিগর দিয়ে মাপ দিন।"
+                : "Experience the touch of authentic Korean Nida and Medina Silk in person, with on-site custom tailoring fitting consultations at our Bardhaman atelier."}
             </p>
 
             <div className="space-y-2 text-xs sm:text-sm text-[#1C1B18] pt-1">
@@ -367,7 +367,7 @@ export default async function HomePage({
 
           <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
             <a
-              href="https://maps.google.com/?q=Park+Circus+Kolkata"
+              href="https://maps.google.com/?q=Bardhaman+Railway+Station+West+Bengal"
               target="_blank"
               rel="noopener noreferrer"
               className="px-6 py-3.5 rounded-xl bg-[#14372E] text-[#FBF7F0] font-bold text-xs sm:text-sm hover:bg-[#14372E]/90 transition-all shadow-md text-center flex items-center justify-center gap-2"

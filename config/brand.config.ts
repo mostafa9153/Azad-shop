@@ -104,12 +104,12 @@ export const brandConfig: BrandConfig = {
   },
   shop: {
     address: {
-      en: "42, Zakaria Street / Park Circus Area, Kolkata 700017, West Bengal",
-      bn: "৪২, জাকারিয়া স্ট্রিট / পার্ক সার্কাস এলাকা, কলকাতা ৭০০০১৭, পশ্চিমবঙ্গ",
+      en: "Station Road, Near Curzon Gate, Bardhaman Railway Station Area, Bardhaman 713101, West Bengal",
+      bn: "স্টেশন রোড, কার্জন গেট ও বর্ধমান রেলওয়ে স্টেশনের নিকট, বর্ধমান ৭১৩১০১, পশ্চিমবঙ্গ",
     },
-    city: "Kolkata",
+    city: "Bardhaman",
     state: "West Bengal",
-    pincode: "700017",
+    pincode: "713101",
     openingHours: {
       en: "Daily 10:00 AM – 9:00 PM (Closed Friday prayer hours 12:30 – 2:30 PM)",
       bn: "প্রতিদিন সকাল ১০:০০ – রাত ৯:০০ (শুক্রবার জুম্মার নামাজে দুপুর ১২:৩০ – ২:৩০ বন্ধ)",
